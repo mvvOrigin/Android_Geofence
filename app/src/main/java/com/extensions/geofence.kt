@@ -3,8 +3,6 @@ package com.extensions
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import com.geomessages.GeoReceiver
 import com.google.android.gms.location.*
 
 const val GEO_RADIUS_METERS = 100f
@@ -30,20 +28,21 @@ fun setupGeoFences(context: Context, intent: PendingIntent) {
 
     geoClient.addGeofences(geoRequest, intent).run {
         addOnSuccessListener {
-            sendNotification(context, CHANNEL_ID_GEO_TIPS, "status", "Geofences added")
+            logD("addGeoFences, success")
         }
         addOnFailureListener {
-            sendNotification(context, CHANNEL_ID_GEO_TIPS, "status", "Geofences failed")
+            logD("addGeoFences, failed")
         }
     }
 }
 
-fun onReceiveGeoIntent(context: Context, intent: Intent) {
+fun onReceiveGeoFence(context: Context, intent: Intent) {
 
     val geoEvent = GeofencingEvent.fromIntent(intent)
     if (geoEvent.hasError()) {
         val errorMessage = GeofenceStatusCodes.getStatusCodeString(geoEvent.errorCode)
-        sendNotification(context,"error", errorMessage)
+        sendNotification(context, CHANNEL_ID_GENERAL,"invalid geo-fence", errorMessage)
+        logI("onReceiveGeoFence, $errorMessage")
         return
     }
 
@@ -56,5 +55,6 @@ fun onReceiveGeoIntent(context: Context, intent: Intent) {
 
     val text = geoEvent.triggeringGeofences.joinToString { it.requestId }
 
-    sendNotification(context, CHANNEL_ID_GEO_TIPS, type, text)
+    sendNotification(context, CHANNEL_ID_GENERAL, type, text)
+    logI("onReceiveGeoFence, $type, $text")
 }

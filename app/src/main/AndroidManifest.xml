@@ -7,6 +7,7 @@
          location permissions for the 'MyLocation' functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
@@ -41,11 +42,13 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".GeoReceiver" />
+        <receiver android:name=".GeoFenceReceiver" />
+        <receiver android:name=".LocationReceiver" />
 
-        <service android:name=".GeoService"
+        <service android:name=".LocationService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true"
+            android:foregroundServiceType="location"/>
     </application>
 
 </manifest>

@@ -2,20 +2,12 @@
 
 package com.geomessages
 
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.extensions.LOCATION_PERMISSION_CODE
-import com.extensions.PointOfInterests
-import com.extensions.checkLocationPermissionOrRequest
-import com.google.android.gms.location.*
-import com.google.android.gms.maps.CameraUpdateFactory
+import com.extensions.*
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
-
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -26,7 +18,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_maps)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        /**
+         * map disabled due to experiment with location tracking out of map, use:
+         * - foreground service
+         * - other apps e.g. Google Maps
+         */
+        // mapFragment.getMapAsync(this)
 
         checkLocationPermissionOrRequest {
             onLocationPermissionGrantedForGeoFence()
@@ -36,13 +33,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        PointOfInterests.forEach {
-            googleMap.addMarker(
-                MarkerOptions()
-                    .position(it.value)
-                    .title(it.key)
-            )
-        }
+        mMap.addMarkers(PointOfInterests)
+
         checkLocationPermissionOrRequest {
             onLocationPermissionGrantedForMap()
         }
@@ -54,30 +46,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         results: IntArray
     ) {
         super.onRequestPermissionsResult(code, permissions, results)
-        if (code == LOCATION_PERMISSION_CODE
-            && permissions.contains(ACCESS_FINE_LOCATION)
-            && results.contains(PERMISSION_GRANTED)
-        ) {
-            onLocationPermissionGrantedForMap()
-            onLocationPermissionGrantedForGeoFence()
-        }
+        onLocationsPermissionsResult(code, permissions, results,
+            granted = {
+                onLocationPermissionGrantedForMap()
+                onLocationPermissionGrantedForGeoFence()
+            },
+            denied = {
+                logD("permission denied, $permissions, $results")
+            }
+        )
     }
 
     private fun onLocationPermissionGrantedForMap() {
-        if (this::mMap.isInitialized.not()) return
-
+        if (this::mMap.isInitialized.not())
         mMap.isMyLocationEnabled = true
-
-        LocationServices.getFusedLocationProviderClient(this).lastLocation
-            .addOnSuccessListener { location ->
-                val lat = LatLng(location.latitude, location.longitude)
-                val cameraUpdate = CameraUpdateFactory.newLatLngZoom(lat, 16f)
-                mMap.moveCamera(cameraUpdate)
-                mMap.animateCamera(cameraUpdate)
-            }
     }
 
     private fun onLocationPermissionGrantedForGeoFence() {
-        GeoService.start(this)
+        /**
+         * comment next line to disable foreground service &
+         * test other apps who tracking location
+         */
+        LocationService.start(this)
+        setupGeoFences(this, GeoFenceReceiver.intent(this))
     }
 }

@@ -9,8 +9,8 @@ import androidx.core.app.NotificationManagerCompat
 import com.geomessages.R
 import kotlin.random.Random
 
-const val CHANNEL_ID_GEO_TIPS = "geo-tips"
-const val CHANNEL_ID_GEO_SERVICE = "geo-service"
+const val CHANNEL_ID_GENERAL = "geo_general"
+const val CHANNEL_ID_GEO_SERVICE = "geo_service"
 
 fun createNotificationChannel(context: Context, channelID: String) {
     // Create the NotificationChannel, but only on API 26+ because
