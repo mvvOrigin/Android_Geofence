@@ -8,7 +8,10 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -38,9 +41,11 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".GeofenceBroadcastReceiver" />
+        <receiver android:name=".GeoReceiver" />
 
-        <service android:name=".GeofenceIntentService" />
+        <service android:name=".GeoService"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 
 </manifest>
